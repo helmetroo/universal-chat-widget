@@ -18,6 +18,7 @@ module.exports = {
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath,
     library: 'UniversalChatWidget',
+    libraryTarget: 'commonjs2',
     chunkFilename: '[name].js'
   },
   resolve: {

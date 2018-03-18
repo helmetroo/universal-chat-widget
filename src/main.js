@@ -3,7 +3,6 @@
 import Vue from 'vue'
 
 import ChatWidget from './components/ChatWidget.vue'
-import ChatAdapterActionCable from 'chat-adapter-actioncable'
 import ChatAdapterRocketChat from 'chat-adapter-rocketchat'
 import Fingerprint2 from 'fingerprintjs2'
 import deepmerge from 'deepmerge'
@@ -58,21 +57,7 @@ export function Widget (config) {
   }
   var _eventBus = new EventEmitter()
 
-  var _adapter
-
-  switch (config.adapter.toLowerCase()) {
-    case 'actioncable':
-      _adapter = new ChatAdapterActionCable()
-      break
-
-    case 'rocketchat':
-      _adapter = new ChatAdapterRocketChat()
-      break
-
-    default:
-      render(`Invalid adapter: ${config.adapter}. Please use either ActionCable or RocketChat`)
-      break
-  }
+  var _adapter = new ChatAdapterRocketChat()
 
   var _adapterConfig = config.adapterConfig
 

@@ -2,6 +2,7 @@
   "name": "universal-chat-widget",
   "version": "1.0.1",
   "description": "Universal chat widget",
+  "main": "dist/static/js/app.bundle.js",
   "scripts": {
     "dev": "node build/dev-server.js",
     "start": "node build/dev-server.js",
@@ -12,6 +13,7 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
   },
   "dependencies": {
+    "chat-adapter-rocketchat": "^1.0.0",
     "deepmerge": "1.5.1",
     "events": "1.1.1",
     "fingerprintjs2": "1.5.1",
@@ -80,7 +82,7 @@
     "vue-loader": "^13.0.4",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.4.2",
-    "webpack": "^2.6.1",
+    "webpack": "^2.7.0",
     "webpack-bundle-analyzer": "^2.2.1",
     "webpack-dev-middleware": "^1.10.0",
     "webpack-hot-middleware": "^2.18.0",
