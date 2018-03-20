@@ -4,7 +4,6 @@ import Vue from 'vue'
 
 import ChatWidget from './components/ChatWidget.vue'
 import ChatAdapterRocketChat from 'chat-adapter-rocketchat'
-import Fingerprint2 from 'fingerprintjs2'
 import deepmerge from 'deepmerge'
 import EventEmitter from 'events'
 import uidv4 from 'uuid/v4'
@@ -43,7 +42,7 @@ export function Widget (config) {
   // a = new UniversalChatWidget.Widget({adapter: 'ActionCable', element:'#chat-widget', position:'bottom-right', showAvatars: true, allowUploads: true, adapterConfig: {backendUrl: 'http://localhost:3003/web', initData: {endpoint: '/start', method: 'post', data: {appId: '63015c58-13cf-438d-b5d9-d46adcba3139'}}}})
 
   // sample rocket chat initilization:
-  // a = new UniversalChatWidget.Widget({adapter: 'RocketChat', element:'#chat-widget', position:'bottom-right', showAvatars: true, allowUploads: true, adapterConfig: {backendUrl: 'http://localhost:4000', mode: 'private', initData: {username: 'admin', password: 'admin', data: {roomId: 'GENERAL'}}}})
+  // a = new UniversalChatWidget.Widget({adapter: 'RocketChat', element:'#chat-widget', position:'bottom-right', showAvatars: true, allowUploads: true, adapterConfig: {backendUrl: 'http://localhost:4000', mode: 'private', initData: {username: 'admin', password: 'admin', data: {channelId: 'GENERAL'}}}})
 
   var _widget
   var _parent
@@ -62,27 +61,7 @@ export function Widget (config) {
   var _adapterConfig = config.adapterConfig
 
   // retrieve device fingerprint from (browser) local storage
-  var _deviceId = localStorage.getItem('ucwDeviceId')
-
-  if (_deviceId === null || _deviceId === undefined) {
-    // check if config data provides a user.id
-    if (_adapterConfig && _adapterConfig.initData && _adapterConfig.initData.data && _adapterConfig.initData.data.user && _adapterConfig.initData.data.user.id) {
-      // TODO: implement user-merge in backend, when user.id is provided and localStorage.devideId id already set, user.id should survive the merge
-      _deviceId = _adapterConfig.initData.data.user.id
-      localStorage.setItem('ucwDeviceId', _deviceId)
-      initAdapter()
-    } else {
-      // register new device:
-      // build deviceId from Fingerprint2
-      new Fingerprint2().get(function (result) {
-        _deviceId = result
-        localStorage.setItem('ucwDeviceId', _deviceId)
-        initAdapter()
-      })
-    }
-  } else {
-    initAdapter()
-  }
+  initAdapter()
 
   function isFalsey (value) {
     return (value === 'false' || value === false || value === 0 || value === '0')
@@ -90,24 +69,19 @@ export function Widget (config) {
 
   function initAdapter () {
     // Let's init the communication with the backend
-
     // We complement _adapterConfig.initData with further data
     var enhancedConfig = {
       deviceIsoDatetime: new Date().toISOString(),
-      language: navigator.language,
-      deviceId: _deviceId
+      language: navigator.language
     }
 
     if (_adapterConfig.initData.data === null) {
       _adapterConfig.initData.data = {}
     }
     _adapterConfig.initData.data = deepmerge(_adapterConfig.initData.data, enhancedConfig)
-    // console.debug('_adapterConfig ', _adapterConfig)
 
     _adapter.init(_adapterConfig)
         .then(json => {
-          // console.debug('Adapter init returned:', json)
-
           if (typeof json !== 'object') {
             // an error ocurred
             render(json)
@@ -117,7 +91,7 @@ export function Widget (config) {
               displayName: json.display_name || 'Chat',
               avatarUrl: json.avatar_url || null,
               newUsersIntro: json.new_users_intro || '',
-              user: json.user || {id: _deviceId},
+              user: json.user || {},
               lastMessages: json.last_messages || [],
               messageCount: json.message_count || 0,
               availableFrom: json.available_from || null,
@@ -277,7 +251,7 @@ export function Widget (config) {
         onNewUserMessage (newMessage) {
           var data = {
             type: 'messages',
-            from: {id: _deviceId}
+            from: {id: _adapterConfig.initData.data._channelId}
           }
           var merged = deepmerge(newMessage, data)
           // save it to local collection
@@ -288,7 +262,7 @@ export function Widget (config) {
         onRequestOlderMessages () {
           if (this.messages[0].time !== undefined && this.messages[0].time !== null) {
             var data = {
-              deviceId: _deviceId,
+              deviceId: _adapterConfig.initData.data._channelId,
               id: this.messages[0].id,
               time: this.messages[0].time
             }
